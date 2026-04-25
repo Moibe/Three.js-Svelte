@@ -29,9 +29,74 @@
     { kind: 'cone', label: 'Cono', icon: '▲' },
     { kind: 'torus', label: 'Toro', icon: '◯' }
   ];
+
+  let fileInput: HTMLInputElement;
+
+  function exportScene() {
+    const json = studio.serialize();
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    a.href = url;
+    a.download = `escena-3d-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function onFileChosen(ev: Event) {
+    const input = ev.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    const text = await file.text();
+
+    if (studio.shapes.length > 0) {
+      const ok = await confirmStore.ask({
+        title: 'Importar escena',
+        message: `Se reemplazarán las ${studio.shapes.length} figuras actuales por las del archivo. ¿Continuar?`,
+        confirmText: 'Importar',
+        danger: true
+      });
+      if (!ok) return;
+    }
+
+    const result = studio.load(text);
+    if (!result.ok) {
+      await confirmStore.ask({
+        title: 'Error al importar',
+        message: result.error,
+        confirmText: 'Entendido',
+        cancelText: 'Cerrar',
+        danger: false
+      });
+    }
+  }
 </script>
 
 <aside class="panel">
+  <section>
+    <h2>Archivo</h2>
+    <div class="io">
+      <button class="io-btn" onclick={exportScene} disabled={studio.shapes.length === 0}>
+        <span>⬇</span><span>Exportar</span>
+      </button>
+      <button class="io-btn" onclick={() => fileInput.click()}>
+        <span>⬆</span><span>Importar</span>
+      </button>
+      <input
+        bind:this={fileInput}
+        type="file"
+        accept="application/json,.json"
+        onchange={onFileChosen}
+        hidden
+      />
+    </div>
+  </section>
+
   <section>
     <h2>Crear</h2>
     <div class="grid">
@@ -299,5 +364,34 @@
 
   input[type='range'] {
     accent-color: #1a1300;
+  }
+
+  .io {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+  .io-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.5rem;
+    background: transparent;
+    color: #1a1300;
+    border: 2px solid #1a1300;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 0.78rem;
+    transition: background 0.12s, color 0.12s;
+  }
+  .io-btn:hover:not(:disabled) {
+    background: #1a1300;
+    color: #ffdd00;
+  }
+  .io-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 </style>
