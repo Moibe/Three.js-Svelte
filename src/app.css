@@ -1,0 +1,27 @@
+:root {
+  --safety-yellow: #ffdd00;
+  --safety-yellow-deep: #f7a600;
+  --safety-yellow-glow: #fff37a;
+  --ink: #1a1300;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(ellipse at top left, var(--safety-yellow-glow) 0%, transparent 55%),
+    radial-gradient(ellipse at bottom right, var(--safety-yellow-deep) 0%, transparent 60%),
+    linear-gradient(135deg, #ffe600 0%, #ffcc00 40%, #ffaa00 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
